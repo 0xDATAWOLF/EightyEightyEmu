@@ -1,6 +1,6 @@
 /build
 /bin
-/rom/!roms.txt
 /rom/*.*
+!/rom/roms.txt
 /.vscode
 /.vs

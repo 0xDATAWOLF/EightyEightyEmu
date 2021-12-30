@@ -1,0 +1,2 @@
+You will need to source your Space Invaders rom for this project. The file names must match what the project expects
+or set the defines in main.c to the names of your ROM files.
