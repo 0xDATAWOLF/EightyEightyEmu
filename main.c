@@ -17,11 +17,23 @@ typedef float r32;
 typedef double r64;
 
 /**
+ * Byte sizing macros used for memory allocation and memory offsets.
+ */
+#define Kilobyte(size) (i32)(size*1024)
+#define Megabytes(size) (i32)(Kilobyte(size)*1024)
+#define Gigabytes(size) (i64)(Megabytes(size)*1024)
+#define Terabytes(size) (i64)(Gigabytes(size)*1024)
+
+#define ROM_FILE_PATH "./rom/invaders.h"
+
+/**
  * Dissasmbles ROM binary into their corresponding opcodes and outputs to a file.
  */
 i32
 DisassembleBinary()
 {
+
+	
 
 	return 0;
 }
@@ -137,11 +149,60 @@ wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR Commandline, i32 Co
 
 #else
 
-int
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
+
+i32
+POSIXReadfile()
+{
+	i32 rom_fd = open(ROM_FILE_PATH, O_RDONLY); 
+	if (!rom_fd)
+	{
+		printf("Rom file was not found, file descriptor invalid.\n");
+	}
+
+	return 0;
+}
+
+off_t
+POSIXFileSize(const char* Filepath)
+{
+	off_t fileSize = -1;
+	struct stat FileStat;
+	if (stat(Filepath, &FileStat) == 0)
+	{
+		return FileStat.st_size;
+	}
+	return fileSize;
+}
+
+i32
 main()
 {
+	printf("EightyEightyEmu Linux \n");
 	
+	i32 Filesize = POSIXFileSize(ROM_FILE_PATH);
+	if (Filesize == -1 || Filesize == 0)
+	{
+		printf("ROM file, %s, has not been found.\n", ROM_FILE_PATH);
+	}
+	else
+	{
+		printf("ROM file, %s, has been found.\n", ROM_FILE_PATH);
+		printf("ROM file size is: %d.\n", Filesize);
+	}
 
+	void* ApplicationMemory = malloc(Megabytes(512));
+	if (ApplicationMemory == NULL)
+	{
+		printf("Unable to allocate application memory for runtime.\n");
+	}
+	else
+	{
+		printf("Application memory successfully allocated.\n");
+	}
 
 	return 0;
 }
