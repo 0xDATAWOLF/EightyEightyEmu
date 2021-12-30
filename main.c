@@ -32,7 +32,6 @@ DisassembleBinary()
  * we'll be abstracting out calls to platform calls to function pointers in order to make it
  * more portable. Please take note!
  */
-=
 #ifdef _WIN32
 #include <windows.h>
 
