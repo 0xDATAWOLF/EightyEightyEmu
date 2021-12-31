@@ -21,7 +21,7 @@ typedef double r64;
 /**
  * Byte sizing macros used for memory allocation and memory offsets.
  */
-#define Kilobyte(size) (i32)(size*1024)
+#define Kilobytes(size) (i32)(size*1024)
 #define Megabytes(size) (i32)(Kilobyte(size)*1024)
 #define Gigabytes(size) (i64)(Megabytes(size)*1024)
 #define Terabytes(size) (i64)(Gigabytes(size)*1024)
