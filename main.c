@@ -3,6 +3,8 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <string.h>
+
 
 
 typedef int8_t i8;
@@ -22,7 +24,7 @@ typedef double r64;
  * Byte sizing macros used for memory allocation and memory offsets.
  */
 #define Kilobytes(size) (i32)(size*1024)
-#define Megabytes(size) (i32)(Kilobyte(size)*1024)
+#define Megabytes(size) (i32)(Kilobytes(size)*1024)
 #define Gigabytes(size) (i64)(Megabytes(size)*1024)
 #define Terabytes(size) (i64)(Gigabytes(size)*1024)
 
@@ -44,16 +46,32 @@ DisassembleBinary(void* BinaryData, i32 BinaryByteCount)
 	i32 operationCodeCount = 0;
 	while(operationCodeCount < BinaryByteCount)
 	{
+
 		u8 instructionSize = 1;
 		u8 currentInstruction = *(u8*)(BinaryData + operationCodeCount);
 		switch(currentInstruction)
 		{
 			case 0x00:
-				printf("0x%02X : NOP : %d\n", currentInstruction, instructionSize);
+				printf("0x%02X NOP : 1\n", currentInstruction);
 				break;
-
+			case 0x01:
+				instructionSize = 3;
+				printf("0x%02X LXI B,D16 : 3\n", currentInstruction);
+				break;
+			case 0x02:
+				printf("0x%02X STAX B : 1\n", currentInstruction);
+				break;
+			case 0x03:
+				printf("0x%02X INX B : 1\n", currentInstruction);
+				break;
+			case 0x04:
+				printf("0x%02X INR B : 1\n", currentInstruction);
+				break;
+			case 0x05:
+				printf("0x%02X DCR B : 1\n", currentInstruction);
 			default:
-				printf("0x%02X : UNKWN : ?\n", currentInstruction);
+				printf("0x%02X : ?\n", currentInstruction);
+				break;
 		}
 
 		operationCodeCount += instructionSize;
