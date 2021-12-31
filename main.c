@@ -2,6 +2,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <assert.h>
+
 
 typedef int8_t i8;
 typedef int16_t i16;
@@ -26,18 +28,59 @@ typedef double r64;
 
 #define ROM_FILE_PATH "./rom/invaders.h"
 
+typedef i32 fn_ptr_read_file(const char*, void*, i32);
+fn_ptr_read_file* PlatformReadfile = NULL;
+
+typedef i32 fn_ptr_file_size(const char*);
+fn_ptr_file_size* PlatformFilesize = NULL;
+
 /**
- * Dissasmbles ROM binary into their corresponding opcodes and outputs to a file.
+ * Dissasmbles ROM binary into human readable instructions and prints them out.
  */
 i32
-DisassembleBinary()
+DisassembleBinary(void* BinaryData, i32 BinaryByteCount)
 {
 
-	
+	i32 operationCodeCount = 0;
+	while(operationCodeCount < BinaryByteCount)
+	{
+		u8 instructionSize = 1;
+		u8 currentInstruction = *(u8*)(BinaryData + operationCodeCount);
+		switch(currentInstruction)
+		{
+			case 0x00:
+				printf("0x%02X : NOP : %d\n", currentInstruction, instructionSize);
+				break;
+
+			default:
+				printf("0x%02X : UNKWN : ?\n", currentInstruction);
+		}
+
+		operationCodeCount += instructionSize;
+	}
 
 	return 0;
 }
 
+/**
+ * Application Main is called right after the platform performs all it's required
+ * duties, such as filling out function pointers, allocating memory, and window allocations.
+ */
+i32
+ApplicationMain(void* AppMemory)
+{
+
+	assert(AppMemory != NULL);
+	assert(PlatformReadfile != NULL);
+	assert(PlatformFilesize != NULL);
+
+	i32 ROMFilesize = PlatformFilesize(ROM_FILE_PATH);
+	i32 ReadStatus = PlatformReadfile(ROM_FILE_PATH, AppMemory, ROMFilesize);
+
+	DisassembleBinary(AppMemory, ROMFilesize);
+
+	return 0;
+}
 
 /**
  * Application entry points are defined here. Since this is designed to work on all platforms,
@@ -152,10 +195,10 @@ wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR Commandline, i32 Co
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-
+#include <unistd.h>
 
 i32
-POSIXReadfile()
+POSIXReadfile(const char* Filepath, void* MemoryLoc, i32 BytesReading)
 {
 	i32 rom_fd = open(ROM_FILE_PATH, O_RDONLY); 
 	if (!rom_fd)
@@ -163,10 +206,12 @@ POSIXReadfile()
 		printf("Rom file was not found, file descriptor invalid.\n");
 	}
 
+	i32 read_status = read(rom_fd, MemoryLoc, BytesReading); 
+
 	return 0;
 }
 
-off_t
+i32
 POSIXFileSize(const char* Filepath)
 {
 	off_t fileSize = -1;
@@ -181,30 +226,12 @@ POSIXFileSize(const char* Filepath)
 i32
 main()
 {
-	printf("EightyEightyEmu Linux \n");
 	
-	i32 Filesize = POSIXFileSize(ROM_FILE_PATH);
-	if (Filesize == -1 || Filesize == 0)
-	{
-		printf("ROM file, %s, has not been found.\n", ROM_FILE_PATH);
-	}
-	else
-	{
-		printf("ROM file, %s, has been found.\n", ROM_FILE_PATH);
-		printf("ROM file size is: %d.\n", Filesize);
-	}
-
 	void* ApplicationMemory = malloc(Megabytes(512));
-	if (ApplicationMemory == NULL)
-	{
-		printf("Unable to allocate application memory for runtime.\n");
-	}
-	else
-	{
-		printf("Application memory successfully allocated.\n");
-	}
+	PlatformReadfile = POSIXReadfile;
+	PlatformFilesize = POSIXFileSize;
 
-	return 0;
+	return ApplicationMain(ApplicationMemory);
 }
 
 #endif
