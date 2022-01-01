@@ -21,3 +21,12 @@ This library will require third party libraries for graphics and GUI controls. (
 ### ROMs
 
 This project requires the `spaceinvaders.*` ROM files to be placed in the `rom/` directory. It is your responsibility to source this ROM legally. Otherwise, this emulator is functionally useless without it.
+
+# Brief Documentation
+
+* Includes a disassembler for printing out the contents of the ROM into the console.
+
+
+
+
+
