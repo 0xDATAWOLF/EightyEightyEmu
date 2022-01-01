@@ -5,30 +5,13 @@
 #include <assert.h>
 #include <string.h>
 
+#include "main.h"
+#include "primitives.h"
 
-
-typedef int8_t i8;
-typedef int16_t i16;
-typedef int32_t i32;
-typedef int64_t i64;
-
-typedef uint8_t u8;
-typedef uint16_t u16;
-typedef uint32_t u32;
-typedef uint64_t u64;
-
-typedef float r32;
-typedef double r64;
-
-/**
- * Byte sizing macros used for memory allocation and memory offsets.
- */
-#define Kilobytes(size) (i32)(size*1024)
-#define Megabytes(size) (i32)(Kilobytes(size)*1024)
-#define Gigabytes(size) (i64)(Megabytes(size)*1024)
-#define Terabytes(size) (i64)(Gigabytes(size)*1024)
-
-#define ROM_FILE_PATH "./rom/invaders.h"
+#define ROM_INVADERS_E "./rom/invaders.e"
+#define ROM_INVADERS_F "./rom/invaders.f"
+#define ROM_INVADERS_G "./rom/invaders.g"
+#define ROM_INVADERS_H "./rom/invaders.h"
 
 typedef i32 fn_ptr_read_file(const char*, void*, i32);
 fn_ptr_read_file* PlatformReadfile = NULL;
@@ -350,8 +333,8 @@ ApplicationMain(void* AppMemory)
 	assert(PlatformReadfile != NULL);
 	assert(PlatformFilesize != NULL);
 
-	i32 ROMFilesize = PlatformFilesize(ROM_FILE_PATH);
-	i32 ReadStatus = PlatformReadfile(ROM_FILE_PATH, AppMemory, ROMFilesize);
+	i32 ROMFilesize = PlatformFilesize(ROM_INVADERS_H);
+	i32 ReadStatus = PlatformReadfile(ROM_INVADERS_H, AppMemory, ROMFilesize);
 
 	DisassembleBinary(AppMemory, ROMFilesize);
 
@@ -476,7 +459,7 @@ wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR Commandline, i32 Co
 i32
 POSIXReadfile(const char* Filepath, void* MemoryLoc, i32 BytesReading)
 {
-	i32 rom_fd = open(ROM_FILE_PATH, O_RDONLY); 
+	i32 rom_fd = open(Filepath, O_RDONLY); 
 	if (!rom_fd)
 	{
 		printf("Rom file was not found, file descriptor invalid.\n");
