@@ -1,3 +1,22 @@
+
+/**
+ * Welcome, traveler, to main.c, where you will find all sorts of Italian cuisine.
+ * Our current special today is spaghetti!
+ * 
+ * Anyway, this is broken up into two parts. Part one, application runtime, contains
+ * the bulk of the runtime code. Part two, platform abstraction and entry points, contains
+ * the "main" entry points ifdef'd based on the platform the code is compiled on. Additionally,
+ * any OS-specific code is abstracted for the application, such as file IO.
+ * 
+ * THE MIGHTY TODO:
+ * 
+ * 1. Complete CPU emulation
+ * 2. Bitmap drawing (basic)
+ * 3. Bitmap drawing (GPU accelerated)
+ * 4. Sound??
+ * 5. IMGUI Debugging & Visualization
+ */
+
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -341,6 +360,15 @@ ApplicationMain(void* AppMemory)
 	return 0;
 }
 
+
+
+
+
+
+
+
+
+
 /**
  * Application entry points are defined here. Since this is designed to work on all platforms,
  * we'll be abstracting out calls to platform calls to function pointers in order to make it
@@ -430,6 +458,48 @@ ReleaseConsole()
 	return result;
 }
 
+i32
+WIN32Readfile(const char* Filepath, void* MemoryLoc, i32 BytesReading)
+{
+
+	HANDLE fileHandle = CreateFile(Filepath, GENERIC_READ, FILE_SHARE_READ,
+		NULL, OPEN_EXISTING, NULL, NULL);
+
+	/**
+	 * NOTE: We are enforcing ReadFile to always read the bytes requested,
+	 * but it may be necessary to check for EOF and if we have read the
+	 * amount of bytes requested. However, for now, we'll just EXPLODE.
+	 */
+	DWORD BytesRead = 0;
+	ReadFile(fileHandle, MemoryLoc, BytesReading, &BytesRead, NULL);
+	CloseHandle(fileHandle);
+
+	assert(BytesRead == BytesReading);
+
+}
+
+i32
+WIN32Filesize(const char* Filepath)
+{
+
+	HANDLE fileHandle = CreateFile(Filepath, GENERIC_READ, FILE_SHARE_READ,
+		NULL, OPEN_EXISTING, NULL, NULL);
+
+	assert(fileHandle != INVALID_HANDLE_VALUE);
+
+	LARGE_INTEGER fileSize = {0};
+	GetFileSizeEx(fileHandle, &fileSize);
+	CloseHandle(fileHandle);
+
+	/**
+	 * We aren't expecting a file over 4GB, but in case it is, EXPLODE.
+	 * TODO: We should probably take this into consideration at some point.
+	 */
+	assert(fileSize.QuadPart < 0xFFFFFFFF);
+	return fileSize.LowPart;
+
+}
+
 i32 WINAPI
 wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR Commandline, i32 CommandShow)
 {
@@ -442,10 +512,11 @@ wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR Commandline, i32 Co
 
     }
 
-	printf("Hello world.\n");
+	void* ApplicationMemory = malloc(Megabytes(512));
+	PlatformFilesize = WIN32Filesize;
+	PlatformReadfile = WIN32Readfile;
 
-
-	return 0;
+	return ApplicationMain(ApplicationMemory);
 }
 
 
@@ -471,7 +542,7 @@ POSIXReadfile(const char* Filepath, void* MemoryLoc, i32 BytesReading)
 }
 
 i32
-POSIXFileSize(const char* Filepath)
+POSIXFilesize(const char* Filepath)
 {
 	off_t fileSize = -1;
 	struct stat FileStat;
@@ -488,7 +559,7 @@ main()
 	
 	void* ApplicationMemory = malloc(Megabytes(512));
 	PlatformReadfile = POSIXReadfile;
-	PlatformFilesize = POSIXFileSize;
+	PlatformFilesize = POSIXFilesize;
 
 	return ApplicationMain(ApplicationMemory);
 }
