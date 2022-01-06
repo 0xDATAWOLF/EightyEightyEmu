@@ -38,6 +38,64 @@ fn_ptr_read_file* PlatformReadfile = NULL;
 typedef i32 fn_ptr_file_size(const char*);
 fn_ptr_file_size* PlatformFilesize = NULL;
 
+typedef struct processor_state
+{
+	struct registers
+	{
+		u8 a;
+		u8 b;
+		u8 c;
+		u8 d;
+		u8 e;
+		u8 h;
+		u8 l;
+		u16 sp;
+		u16 pc;
+	} registers;
+	struct flags
+	{
+		u8 s: 1;
+		u8 z: 1;
+		u8 always_zero_a: 1;
+		u8 ac: 1;
+		u8 always_zero_b: 1;
+		u8 p: 1;
+		u8 always_one_a: 1;
+		u8 c: 1;
+	} flags;
+
+	void* BaseAddress;
+	u8* MemoryAddress;
+	u8 int_enable;
+
+} processor_state;
+
+void
+UnexpectedInstruction(processor_state* CPU)
+{
+	u8 currentOperation = CPU->MemoryAddress[CPU->registers.pc];
+	printf("The emulator has encountered an unexpected instruction 0x%02X.\n");
+	assert(!"Quick halt!");
+}
+
+i32
+EmulationRuntime(processor_state* CPU)
+{
+	
+	u8* opcode = &CPU->MemoryAddress[CPU->registers.pc];
+	
+	switch (*opcode)
+	{
+		case 0x00: break;
+		
+		default: UnexpectedInstruction(CPU); break;
+	};
+
+	++CPU->registers.pc;
+	return 0;
+
+}
+
 /**
  * Dissasmbles ROM binary into human readable instructions and prints them out.
  * Eventually, I will set up a file writing procedure to output this information
@@ -361,8 +419,25 @@ ApplicationMain(void* AppMemory)
 	 * 
 	 * It's not entirely useful except for debug purposes. And it won't work on Windows for various
 	 * reason that I won't go into in a small comment.
+	 * 
+	 * TODO: We should pull the loop out of the disassembler and enforce its usage at the top
+	 * level so we can do "stepping" within the console.
 	 */
-	DisassembleBinary(AppMemory, ROMFilesize);
+	// DisassembleBinary(AppMemory, ROMFilesize);
+
+	processor_state CPU = {0};
+	u8 ApplicationRunning = 1;
+	while (ApplicationRunning)
+	{
+		i32 ProcessorRFlags = EmulationRuntime(&CPU);
+		/**
+		 * Processor R-Flags, runtime flags, are a product of the CPU emulation.
+		 * We can use the output of the EmulationRuntime function to determine
+		 * if the CPU is a good state, or in a bad state (but recoverable), or
+		 * an unrecoverable state and requires the application runtime to shut down.
+		 * 
+		 */
+	}
 
 	return 0;
 }
