@@ -120,23 +120,19 @@ ApplicationMain(void* AppMemory)
 	 */
 	void* MemoryOffsetPtr = AppMemory;
 	PlatformReadfile(ROM_INVADERS_H, MemoryOffsetPtr, InvadersH_Filesize);
-	PlatformReadfile(ROM_INVADERS_G, (void*)((u8*)MemoryOffsetPtr += InvadersH_Filesize), InvadersG_Filesize);
-	PlatformReadfile(ROM_INVADERS_F, (void*)((u8*)MemoryOffsetPtr += InvadersG_Filesize), InvadersF_Filesize);
-	PlatformReadfile(ROM_INVADERS_E, (void*)((u8*)MemoryOffsetPtr += InvadersF_Filesize), InvadersE_Filesize);
+	MemoryOffsetPtr += InvadersH_Filesize;
 
-	/**
-	 * This function will output to the console the entire disassembled binary in a human readable
-	 * format. The downside is that it will output to the console the entire disassembled binary.
-	 * 
-	 * It's not entirely useful except for debug purposes. And it won't work on Windows for various
-	 * reason that I won't go into in a small comment.
-	 * 
-	 * TODO: We should pull the loop out of the disassembler and enforce its usage at the top
-	 * level so we can do "stepping" within the console.
-	 */
-	// DisassembleBinary(AppMemory, ROMFilesize);
+	PlatformReadfile(ROM_INVADERS_G, MemoryOffsetPtr, InvadersG_Filesize);
+	MemoryOffsetPtr += InvadersG_Filesize;
+
+	PlatformReadfile(ROM_INVADERS_F, MemoryOffsetPtr, InvadersF_Filesize);
+	MemoryOffsetPtr += InvadersF_Filesize;
+
+	PlatformReadfile(ROM_INVADERS_E, MemoryOffsetPtr, InvadersE_Filesize);
+
 	processor_state CPU = {0};
 	CPU.BaseAddress = AppMemory;
+	CPU.MemoryAddress = AppMemory;
 
 	u8 ApplicationRunning = 1;
 	while (ApplicationRunning)
@@ -154,15 +150,6 @@ ApplicationMain(void* AppMemory)
 
 	return 0;
 }
-
-
-
-
-
-
-
-
-
 
 /**
  * Application entry points are defined here. Since this is designed to work on all platforms,
